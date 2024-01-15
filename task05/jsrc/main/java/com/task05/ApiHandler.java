@@ -58,7 +58,7 @@ public class ApiHandler implements RequestHandler<Request, Response> {
 		table.putItem(new PutItemSpec().withItem(
 				new Item().withPrimaryKey("id", id)
 						  .withInt("principalId", request.getPrincipalId())
-						  .withString("createdAt", getCurrentTime())
+						  .withString("createdAt", getCurrentDateTimeAsISO8601())
 						  .withMap("body", request.getContent())));
 
 		GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
@@ -66,9 +66,9 @@ public class ApiHandler implements RequestHandler<Request, Response> {
 		return table.getItem(getItemSpec);
 	}
 
-	private String getCurrentTime() {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		LocalDateTime now = LocalDateTime.now();
-		return dtf.format(now);
+	public String getCurrentDateTimeAsISO8601() {
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+		return currentDateTime.format(formatter);
 	}
 }
