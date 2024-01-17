@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>aws-training-group</groupId>
-    <artifactId>aws-training</artifactId>
+    <groupId>task08-group</groupId>
+    <artifactId>task08</artifactId>
     <version>1.0.0</version>
 
     <properties>
@@ -30,7 +30,68 @@
             <artifactId>deployment-configuration-annotations</artifactId>
             <version>${deployment-configuration-annotations.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cloud-native</groupId>
+            <artifactId>simple-open-meteo-sdk</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/simple-open-meteo-sdk-1.0.jar</systemPath>
+        </dependency>
     </dependencies>
+
+    <!--    <build>-->
+    <!--        <sourceDirectory>${src.dir}</sourceDirectory>-->
+    <!--        <plugins>-->
+    <!--            <plugin>-->
+    <!--                <groupId>net.sf.aws-syndicate</groupId>-->
+    <!--                <artifactId>deployment-configuration-maven-plugin</artifactId>-->
+    <!--                <version>${deployment-configuration-annotations.version}</version>-->
+    <!--                <configuration>-->
+    <!--                    <packages>-->
+    <!--                        <package>com.task08</package>-->
+    <!--                    </packages>-->
+    <!--                    <fileName>${project.name}-${project.version}.jar</fileName>-->
+    <!--                </configuration>-->
+    <!--                <executions>-->
+    <!--                    <execution>-->
+    <!--                        <id>generate-config</id>-->
+    <!--                        <phase>compile</phase>-->
+    <!--                        <inherited>false</inherited>-->
+    <!--                        <goals>-->
+    <!--                            <goal>gen-deployment-config</goal>-->
+    <!--                            <goal>assemble-lambda-layer-files</goal>-->
+    <!--                        </goals>-->
+    <!--                    </execution>-->
+    <!--                </executions>-->
+    <!--            </plugin>-->
+    <!--            <plugin>-->
+    <!--                <groupId>org.apache.maven.plugins</groupId>-->
+    <!--                <artifactId>maven-shade-plugin</artifactId>-->
+    <!--                <version>${maven-shade-plugin.version}</version>-->
+    <!--                <configuration>-->
+    <!--                    <filters>-->
+    <!--                        <filter>-->
+    <!--                            <artifact>*:*</artifact>-->
+    <!--                            <excludes>-->
+    <!--                                <exclude>META-INF/*.SF</exclude>-->
+    <!--                                <exclude>META-INF/*.DSA</exclude>-->
+    <!--                                <exclude>META-INF/*.RSA</exclude>-->
+    <!--                            </excludes>-->
+    <!--                        </filter>-->
+    <!--                    </filters>-->
+    <!--                    <createDependencyReducedPom>false</createDependencyReducedPom>-->
+    <!--                </configuration>-->
+    <!--                <executions>-->
+    <!--                    <execution>-->
+    <!--                        <phase>package</phase>-->
+    <!--                        <goals>-->
+    <!--                            <goal>shade</goal>-->
+    <!--                        </goals>-->
+    <!--                    </execution>-->
+    <!--                </executions>-->
+    <!--            </plugin>-->
+    <!--        </plugins>-->
+    <!--    </build>-->
 
     <build>
         <sourceDirectory>${src.dir}</sourceDirectory>
@@ -41,7 +102,7 @@
                 <version>${deployment-configuration-annotations.version}</version>
                 <configuration>
                     <packages>
-                        <package>com.awstraining</package>
+                        <package>com.task08</package>
                     </packages>
                     <fileName>${project.name}-${project.version}.jar</fileName>
                 </configuration>
