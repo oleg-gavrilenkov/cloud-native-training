@@ -3,7 +3,8 @@ package com.task10.handlers.impl;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -15,7 +16,9 @@ import org.joda.time.LocalTime;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -33,18 +36,16 @@ public class PostReservationsHandler extends AbstractEventHandler {
 		try {
 			ReservationData reservationData = objectMapper.readValue(event.getBody(), ReservationData.class);
 			validateReservation(reservationData);
-			if (isReservationPossible(reservationData, dynamoDB)) {
-				String resUid = createReservation(reservationData, dynamoDB);
-				CreateReservationResponse createReservationResponse = new CreateReservationResponse();
-				createReservationResponse.setReservationId(resUid);
+			checkIfReservationPossible(reservationData, dynamoDB);
 
-				response =  new APIGatewayProxyResponseEvent()
-						.withStatusCode(200)
-						.withBody(objectMapper.writeValueAsString(createReservationResponse));
+			String resUid = createReservation(reservationData, dynamoDB);
+			CreateReservationResponse createReservationResponse = new CreateReservationResponse();
+			createReservationResponse.setReservationId(resUid);
 
-			} else {
-				throw new RuntimeException("Table with number " + reservationData.getTableNumber() + " doesn't exist");
-			}
+			response =  new APIGatewayProxyResponseEvent()
+					.withStatusCode(200)
+					.withBody(objectMapper.writeValueAsString(createReservationResponse));
+
 
 		} catch (Exception e) {
 			logError(e, context);
@@ -54,12 +55,39 @@ public class PostReservationsHandler extends AbstractEventHandler {
 		return response;
 	}
 
-	private boolean isReservationPossible(ReservationData reservationData, DynamoDB dynamoDB) {
+	private void checkIfReservationPossible(ReservationData reservationData, DynamoDB dynamoDB) {
+		if (!doestTableExist(reservationData, dynamoDB)) {
+			throw new RuntimeException("Table with number " + reservationData.getTableNumber() + " doesn't exist");
+		}
+
+		if (isTableReserved(reservationData, dynamoDB)) {
+			throw new RuntimeException("Table with number " + reservationData.getTableNumber() + " already reserved");
+		}
+	}
+
+	private boolean isTableReserved(ReservationData reservationData, DynamoDB dynamoDB) {
+		Table dbTable = dynamoDB.getTable("cmtr-dbb8bb3b-Reservations-test");
+
+		Map<String, String> nameMap = new HashMap<>();
+		nameMap.put("#tableNumber", "tableNumber");
+		ScanSpec scanSpec = new ScanSpec().withFilterExpression("#tableNumber = :v_precip")
+										  .withNameMap(nameMap)
+										  .withValueMap(new ValueMap().withNumber(":v_precip", reservationData.getTableNumber()));
+
+
+		return dbTable.scan(scanSpec).iterator().hasNext();
+	}
+
+	private boolean doestTableExist(ReservationData reservationData, DynamoDB dynamoDB) {
 		Table dbTable = dynamoDB.getTable("cmtr-dbb8bb3b-Tables-test");
 
-		GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", reservationData.getTableNumber());
+		Map<String, String> nameMap = new HashMap<>();
+		nameMap.put("#number", "number");
+		ScanSpec scanSpec = new ScanSpec().withFilterExpression("#number = :v_precip")
+										  .withNameMap(nameMap)
+										  .withValueMap(new ValueMap().withNumber(":v_precip", reservationData.getTableNumber()));
 
-		return dbTable.getItem(getItemSpec) != null;
+		return dbTable.scan(scanSpec).iterator().hasNext();
 	}
 
 	private String createReservation(ReservationData reservationData, DynamoDB dynamoDB) {
